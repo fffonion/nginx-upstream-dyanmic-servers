@@ -66,6 +66,13 @@ ngx_module_t ngx_http_upstream_dynamic_servers_module = {
   NGX_MODULE_V1_PADDING
 };
 
+#if  nginx_version  >  1007007 //1.7.7
+#define ngx_resolver_node(n)                                                 \
+    (ngx_resolver_node_t *)                                                  \
+        ((u_char *) (n) - offsetof(ngx_resolver_node_t, node))
+#endif
+
+
 // Implement the "dynamic_server" directive so it's compatible with the nginx
 // default "server" directive. Most of this function is based on the default
 // implementation of "ngx_http_upstream_server" from
@@ -547,8 +554,11 @@ static ngx_resolver_node_t * ngx_resolver_lookup_name(ngx_resolver_t *r, ngx_str
     }
 
     /* hash == node->key */
-
+#if  nginx_version  >  1007007 //1.7.7
+    rn = ngx_resolver_node(node);
+#else
     rn = (ngx_resolver_node_t *) node;
+#endif
 
     rc = ngx_memn2cmp(name->data, rn->name, name->len, rn->nlen);
 
